@@ -1,52 +1,89 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:test_tester/Institution.dart';
 import 'Geography.dart';
-import 'Location&Language.dart';
 import 'Quiz Home Easy.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'helper.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await UserPreferences.init();
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  MyApp({Key? key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale? _locale;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocale().then((locale) {
+      setState(() {
+        _locale = locale;
+      });
+    });
+  }
+
+  Future<Locale> _fetchLocale() async {
+    var languageCode = UserPreferences.getLanguage();
+    return Locale(languageCode ?? 'ja');
+  }
+
+  void _changeLanguage(String languageCode) async {
+    await UserPreferences.setLanguage(languageCode);
+    var locale = await _fetchLocale();
+    setState(() {
+      _locale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'European Union',
-      theme: ThemeData(fontFamily: 'georgia'),
-      home: const Home(title: 'EU'),
-      initialRoute: Home.routeName,
-      routes: <String, WidgetBuilder>{
-        Home.routeName: (BuildContext context) =>
-        const Home(title: 'Home '),
-        language.routeName: (BuildContext context) =>
-        language(),
-        Geography.routeName: (BuildContext context) =>
-            Geography(),
-        Institution.routeName: (BuildContext context) =>
-            Institution(),
-        Easy.routeName: (BuildContext context) =>
-            Easy(),
-      },
-    );
+    if (_locale == null) {
+      return CircularProgressIndicator();
+    } else {
+      return MaterialApp(
+        locale: _locale,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+        ],
+        supportedLocales: [
+          Locale('en'),
+          Locale('hi'),
+          Locale('ja'),
+        ],
+        title: 'European Union',
+        theme: ThemeData(fontFamily: 'georgia'),
+        home: Home(title: 'EU',
+          onLanguageChanged: _changeLanguage,
+        ),
+      );
+    }
   }
 }
 
 class Home extends StatefulWidget {
-  static const routeName = '/Home';
-
-  const Home({Key? key, required this.title,}) : super(key: key);
   final String title;
+  final ValueChanged<String> onLanguageChanged;
+
+  Home({Key? key, required this.title, required this.onLanguageChanged})
+      : super(key: key);
 
   @override
-  State<Home> createState() => _MyHomePageState();
+  State<Home> createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<Home> {
+class _HomeState extends State<Home> {
   var Lan = 'gb';
 
   @override
@@ -66,64 +103,15 @@ Union
               color: Color(0xff333333),
             ),
           ),
-          actions: <Widget>[
-            GestureDetector(
-              onTap: () async {
-                RouteSettings settings = RouteSettings(arguments: Lan);
-                var result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    settings: settings,
-                    builder: (context) => language(),
-                  ),
-                );
-                setState(() {
-                  Lan = result as String;
-                });
+          actions: [
+            DropdownButton<String>(
+              items: [
+                DropdownMenuItem(value: "en", child: Text("English")),
+                DropdownMenuItem(value: "ja", child: Text("日本語")),
+              ],
+              onChanged: (value) {
+                widget.onLanguageChanged(value!);
               },
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: (Lan == 'gb') ? Image.asset('assets/ct/gb.png') :
-                (Lan == 'de') ? Image.asset('assets/ct/de.png') :
-                (Lan == 'fr') ? Image.asset('assets/ct/fr.png') :
-                (Lan == 'us') ? Image.asset('assets/ct/us.png') :
-                (Lan == 'be de') ? Image.asset('assets/ct/be.png') :
-                (Lan == 'ch de') ? Image.asset('assets/ct/ch.png') :
-                (Lan == 'lu de') ? Image.asset('assets/ct/lu.png') :
-                (Lan == 'be fr') ? Image.asset('assets/ct/be.png') :
-                (Lan == 'lu fr') ? Image.asset('assets/ct/lu.png') :
-                (Lan == 'ch fr') ? Image.asset('assets/ct/ch.png') :
-                (Lan == 'lu') ? Image.asset('assets/ct/lu.png') :
-                (Lan == 'it') ? Image.asset('assets/ct/it.png') :
-                (Lan == 'ch it') ? Image.asset('assets/ct/ch.png') :
-                (Lan == 'nl') ? Image.asset('assets/ct/nl.png') :
-                (Lan == 'be nl') ? Image.asset('assets/ct/be.png') :
-                (Lan == 'ie') ? Image.asset('assets/ct/ie.png') :
-                (Lan == 'dk') ? Image.asset('assets/ct/dk.png') :
-                (Lan == 'gr') ? Image.asset('assets/ct/gr.png') :
-                (Lan == 'cy gr') ? Image.asset('assets/ct/cy.png') :
-                (Lan == 'es') ? Image.asset('assets/ct/es.png') :
-                (Lan == 'pt') ? Image.asset('assets/ct/pt.png') :
-                (Lan == 'at') ? Image.asset('assets/ct/at.png') :
-                (Lan == 'se') ? Image.asset('assets/ct/se.png') :
-                (Lan == 'fi') ? Image.asset('assets/ct/fi.png') :
-                (Lan == 'ee') ? Image.asset('assets/ct/ee.png') :
-                (Lan == 'lv') ? Image.asset('assets/ct/lv.png') :
-                (Lan == 'lt') ? Image.asset('assets/ct/lt.png') :
-                (Lan == 'pl') ? Image.asset('assets/ct/pl.png') :
-                (Lan == 'cz') ? Image.asset('assets/ct/cz.png') :
-                (Lan == 'sk') ? Image.asset('assets/ct/sk.png') :
-                (Lan == 'hu') ? Image.asset('assets/ct/hu.png') :
-                (Lan == 'si') ? Image.asset('assets/ct/si.png') :
-                (Lan == 'mt') ? Image.asset('assets/ct/mt.png') :
-                (Lan == 'bg') ? Image.asset('assets/ct/bg.png') :
-                (Lan == 'ro') ? Image.asset('assets/ct/ro.png') :
-                (Lan == 'hr') ? Image.asset('assets/ct/hr.png') :
-                (Lan == 'no') ? Image.asset('assets/ct/no.png') :
-                (Lan == 'ru') ? Image.asset('assets/ct/ru.png') :
-                (Lan == 'ua') ? Image.asset('assets/ct/ua.png') :
-                (Lan == 'jp') ? Image.asset('assets/ct/jp.png') :
-                Image.asset('assets/ct/jp.png'),
-              ),
             ),
           ],
           elevation: 10,
@@ -140,109 +128,7 @@ Union
                 height: 250,
                 width: double.infinity,
                 color: const Color(0xff001489),
-                child:
-                (Lan == 'gb') ? const Text('''
-How have you been''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'us') ? const Text('''
-Welcome to
-European Union''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ie') ? const Text('''
-Welcome to Home
-European Union''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'de' || Lan == 'be de' || Lan == 'lu de' || Lan == 'at') ? const Text('''
-Willkommen bei 
-Zuhause
-Europäische Union''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ch de') ? const Text('''
-Willkommen bei
-Europäische Union''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'fr' || Lan == 'be fr' || Lan == 'lu fr' ||
-                    Lan == 'ch fr') ? const Text('''
-Bienvenue à l' Maison
-Union européenne''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'lu') ? const Text('''
-Wëllkomm bei
-Europäesch Unioun''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'it') ? const Text('''
-Benvenuti in Casa
-Unione europea''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ch it') ? const Text('''
-Benvenuti in
-Unione europea''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'nl' || Lan == 'be nl') ? const Text('''
-Welkom bij Thuis
-Europese Unie''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'dk') ? const Text('''
-Velkommen til Hjem
-Europæiske Union''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'gr' || Lan == 'cy gr') ? const Text('''
-Καλώς ήρθατε
-στην Σπίτι
-Ευρωπαϊκή Ένωση''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'es') ? const Text('''
-Bienvenido a la Casa
-Unión Europea''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'pt') ? const Text('''
-Bem-vindo à Casa
-União Europeia''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'se') ? const Text('''
-Välkommen till Hem
-Europeiska unionen''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'fi') ? const Text('''
-Tervetuloa Koti
-Euroopan unioniin''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ee') ? const Text('''
-Tere tulemast Kodu
-Euroopa Liitu''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'lv') ? const Text('''
-Laipni lūdzam Māja
-Eiropas Savienībā''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'lt') ? const Text('''
-Sveiki atvykę 
-į Namai
-Europos Sąjungą''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'pl') ? const Text('''
-Witaj w Dom
-Unii Europejskiej''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'cz') ? const Text('''
-Vítejte v Domov
-Evropské unii''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'sk') ? const Text('''
-Vitajte v Domov
-Európskej únii''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'hu') ? const Text('''
-Üdvözöljük az Otthon
-Európai Unióban''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'si') ? const Text('''
-Dobrodošli v Dom
-Evropsko unijo''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'mt') ? const Text('''
-Merħba fil- Dar
-Unjoni Ewropea''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'bg') ? const Text('''
-Добре дошли в Дом
-Европейския съюз''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ro') ? const Text('''
-Bine ați venit 
-la Casa
-Uniunea Europeană''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'hr') ? const Text('''
-Dobrodošli u Kuća
-Europsku uniju''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'no') ? const Text('''
-Velkommen til
-Europeiske unionen''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ru') ? const Text('''
-Добро пожаловать в
-Европейский союз''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                (Lan == 'ua') ? const Text('''
-Ласкаво просимо до
-Європейського союзу''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),) :
-                const Text('''
-ようこそ
-ヨーロッパ連合へ''',style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),),
-                //,style: TextStyle(fontStyle: FontStyle.italic, fontSize: 40, color: Color(0xffffd617)),
-              ),
+              )
             ),
             Column(
               //コラムのコラム
