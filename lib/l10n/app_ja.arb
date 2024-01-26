@@ -1,10 +1,3 @@
 {
-  "applicationTitle": "Flutter多言語デモ",
-  "@applicationTitle": {"description": "これは日本語版のアプリ名です。"},
-  "home": "ホーム",
-  "@home": {},
-  "search": "検索",
-  "@search": {},
-  "bookmark": "ブックマーク",
-  "@bookmark": {}
+  "euhello": "Willkommen in der Europäischen Union"
 }
